@@ -29,6 +29,7 @@ import {useRouter, useSearchParams} from "next/navigation";
 import {createProduct} from "@/actions/ProductAction";
 import {ToastContainer, toast} from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import {LoadingButton} from "@/components/widgets/Loader";
 
 
 const products = [
@@ -56,6 +57,9 @@ const formSchema = z.object({
     productName: z.string().min(2, {
         message: "Product Name is required",
     }),
+    deviceComponents: z.string().min(2, {
+        message: "Product Name is required",
+    }),
     // amount: z.string().min(2, {
     //     message: "Amount is required",
     // }),
@@ -73,16 +77,22 @@ const CreateProduct = () => {
         defaultValues: {
             productNo: "",
             productName: "",
+            deviceComponents: "",
             // amount: "Unpaid",
         },
     })
 
-
-    async function onSubmit(values) {
-        const {productNo, productName} = values;
+    const idLoading = form.formState.isSubmitting;
 
 
-        const formDate = {productNo, productName}
+    async function onSubmit(values: z.infer<typeof formSchema>) {
+
+        console.log(values)
+
+        const {productNo, productName, deviceComponents} = values;
+
+
+        const formDate = {productNo, productName, deviceComponents}
 
 
         if (id) {
@@ -100,6 +110,10 @@ const CreateProduct = () => {
                 toast.success(res?.message)
             }
         }
+
+        form.reset()
+        setOpen(false)
+        router.push('/')
     }
 
 
@@ -124,33 +138,25 @@ const CreateProduct = () => {
                             name="productNo"
                             render={({field}) => (
                                 <FormItem>
+                                    {/*<FormLabel>Product No</FormLabel>*/}
+                                    {/*<Select onValueChange={field.onChange} defaultValue={field.value}>*/}
+                                    {/*    <FormControl>*/}
+                                    {/*        <SelectTrigger>*/}
+                                    {/*            <SelectValue placeholder="Select a verified email to display"/>*/}
+                                    {/*        </SelectTrigger>*/}
+                                    {/*    </FormControl>*/}
+                                    {/*    <SelectContent>*/}
+                                    {/*        <SelectItem value="m@example.com">m@example.com</SelectItem>*/}
+                                    {/*        <SelectItem value="m@google.com">m@google.com</SelectItem>*/}
+                                    {/*        <SelectItem value="m@support.com">m@support.com</SelectItem>*/}
+                                    {/*    </SelectContent>*/}
+                                    {/*</Select>*/}
+                                    {/*/!*<FormDescription>*!/*/}
+                                    {/*/!*    You can manage email addresses in your{" "}*!/*/}
+                                    {/*/!*    <Link href="/examples/forms">email settings</Link>.*!/*/}
+                                    {/*/!*</FormDescription>*!/*/}
+                                    {/*<FormMessage/>*/}
                                     <FormLabel>Product No</FormLabel>
-                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                        <FormControl>
-                                            <SelectTrigger>
-                                                <SelectValue placeholder="Select a verified email to display"/>
-                                            </SelectTrigger>
-                                        </FormControl>
-                                        <SelectContent>
-                                            <SelectItem value="m@example.com">m@example.com</SelectItem>
-                                            <SelectItem value="m@google.com">m@google.com</SelectItem>
-                                            <SelectItem value="m@support.com">m@support.com</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                    {/*<FormDescription>*/}
-                                    {/*    You can manage email addresses in your{" "}*/}
-                                    {/*    <Link href="/examples/forms">email settings</Link>.*/}
-                                    {/*</FormDescription>*/}
-                                    <FormMessage/>
-                                </FormItem>
-                            )}
-                        />
-                        <FormField
-                            control={form.control}
-                            name="productName"
-                            render={({field}) => (
-                                <FormItem>
-                                    <FormLabel>ProductName</FormLabel>
                                     <FormControl>
                                         <Input placeholder="Type your product name" {...field} />
                                     </FormControl>
@@ -161,7 +167,48 @@ const CreateProduct = () => {
                                 </FormItem>
                             )}
                         />
-                        <Button type="submit">Submit</Button>
+                        <FormField
+                            control={form.control}
+                            name="productName"
+                            render={({field}) => (
+                                <FormItem>
+                                    <FormLabel>Product Name</FormLabel>
+                                    <FormControl>
+                                        <Input placeholder="Type your product name" {...field} />
+                                    </FormControl>
+                                    {/*<FormDescription>*/}
+                                    {/*    This is your public display name.*/}
+                                    {/*</FormDescription>*/}
+                                    <FormMessage/>
+                                </FormItem>
+                            )}
+                        />
+
+                        <FormField
+                            control={form.control}
+                            name="deviceComponents"
+                            render={({field}) => (
+                                <FormItem>
+                                    <FormLabel>Device Components</FormLabel>
+                                    <FormControl>
+                                        <Input placeholder="Type your device components" {...field} />
+                                    </FormControl>
+                                    {/*<FormDescription>*/}
+                                    {/*    This is your public display name.*/}
+                                    {/*</FormDescription>*/}
+                                    <FormMessage/>
+                                </FormItem>
+                            )}
+                        />
+
+
+                        {idLoading ?
+                            (<LoadingButton btnText={"Loading"} btnClass="w-full" btnVariant={"outline"}/>)
+                            :
+                            (<Button className="w-full" type="submit">Submit</Button>)
+                        }
+
+
                     </form>
                 </Form>
             </ActionModel>

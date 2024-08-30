@@ -4,7 +4,7 @@ import connectDB from "@/lib/mongodb";
 import Product from "@/models/ProductModel";
 import {revalidatePath} from "next/cache";
 
-export const getErrorMessage = (error) => {
+export const getErrorMessage = async function (error) {
     let message;
 
     if (error instanceof Error) {
@@ -22,30 +22,26 @@ export const getErrorMessage = (error) => {
 
 
 export const createProduct = async (formData) => {
-    const {productNo, ProductName} = formData;
+    const {productNo, productName} = formData;
     try {
-        if (!productNo || !ProductName) {
+        if (!productNo || !productName) {
             return {
                 status: false,
                 message: 'All fields are required'
             }
         }
 
-
         await connectDB()
         await Product.create({
             productNo,
-            ProductName
+            productName
         })
 
         revalidatePath("/")
 
-
         return {
             message: 'Product created successfully',
         }
-
-
     } catch (error) {
         console.log(error)
         return {
@@ -53,3 +49,34 @@ export const createProduct = async (formData) => {
         }
     }
 }
+
+export const getProducts = async (params) => {
+    const page = params?.page || 1;
+    const limit = params?.limit || 10;
+    const skip = (page - 1) * limit;
+    const query = {
+        ...(params.search && {
+            $or:[
+                {productNo: {$regex: params.search, $options: 'i'}},
+                {productName: {$regex: params.search, $options: 'i'}},
+            ]
+        })
+    }
+
+    await connectDB();
+    const products = await Product
+        .find(query)
+        .skip(skip)
+        .limit(limit)
+        .sort({createAt: -1});
+
+    const total = await Product.countDocuments(query);
+    const pageCount = Math.ceil(total / limit);
+
+    return JSON.stringify({
+        total,
+        pageCount,
+        data: products,
+    })
+
+};

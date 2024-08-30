@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 export const connectDB = async () => {
   try {
-    const conn = await mongoose.connect(process.env.MONGO_URI, {
+    const conn = await mongoose.connect("mongodb+srv://quangnam130520:root@cluster0.fwoaemp.mongodb.net/inventory?retryWrites=true&w=majority&appName=Cluster0", {
       // useNewUrlParser: true,
       // useUnifiedTopology: true,
       // useFindAndModify: false,
@@ -13,6 +13,7 @@ export const connectDB = async () => {
     return true;
   } catch (error) {
     console.error(`Error: ${error.message}`);
+    process.exit(1)
   }
 }
 
