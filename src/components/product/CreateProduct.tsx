@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, {useEffect} from 'react';
 import ActionModel from "@/components/widgets/ActionModel";
 import {Button} from "@/components/ui/button";
 import {zodResolver} from "@hookform/resolvers/zod"
@@ -26,29 +26,11 @@ import {
 import Link from "next/link";
 import {Input} from "@/components/ui/input";
 import {useRouter, useSearchParams} from "next/navigation";
-import {createProduct} from "@/actions/ProductAction";
+import {createProduct, getProduct, updateProduct} from "@/actions/ProductAction";
 import {ToastContainer, toast} from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import {LoadingButton} from "@/components/widgets/Loader";
 
-
-const products = [
-    {
-        productNo: 1,
-        productName: 'John Doe',
-        // email: 'john@gmail.com'
-    },
-    {
-        productNo: 2,
-        productName: 'Jane Doe',
-        // email: 'done@gmail.com',
-    },
-    {
-        productNo: 3,
-        productName: 'Nam Dinh',
-        // email: 'nam@gmail.com'
-    }
-]
 
 const formSchema = z.object({
     productNo: z.string().min(2, {
@@ -92,14 +74,24 @@ const CreateProduct = () => {
         const {productNo, productName, deviceComponents} = values;
 
 
-        const formDate = {productNo, productName, deviceComponents}
+        const formData = {productNo, productName, deviceComponents, id}
 
 
         if (id) {
             // update
+            const res = await updateProduct(formData);
+            console.log(res)
+
+            if (res?.error) {
+                toast.error(res?.error)
+            }
+
+            if (res?.message) {
+                toast.success(res?.message)
+            }
         } else {
             // create
-            const res = await createProduct(formDate);
+            const res = await createProduct(formData);
             console.log(res)
 
             if (res?.error) {
@@ -115,6 +107,30 @@ const CreateProduct = () => {
         setOpen(false)
         router.push('/')
     }
+
+    useEffect(() => {
+
+        const fetchProduct = async () => {
+            const res = await getProduct(id);
+            const prd = JSON.parse(res)
+
+            form.setValue('productNo', prd.productNo)
+            form.setValue('productName', prd.productName)
+            form.setValue('deviceComponents', prd.deviceComponents)
+        }
+
+
+        if (id) {
+            setOpen(true)
+            fetchProduct()
+        }
+    }, [id])
+
+    useEffect(() => {
+        if (!open) {
+            router.replace('/')
+        }
+    }, [open, router]);
 
 
     return (
@@ -205,7 +221,9 @@ const CreateProduct = () => {
                         {idLoading ?
                             (<LoadingButton btnText={"Loading"} btnClass="w-full" btnVariant={"outline"}/>)
                             :
-                            (<Button className="w-full" type="submit">Submit</Button>)
+                            (<Button className="w-full" type="submit">
+                                {id ? 'Update Product' : 'Create Product'}
+                            </Button>)
                         }
 
 

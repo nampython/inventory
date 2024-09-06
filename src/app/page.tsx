@@ -31,7 +31,7 @@ export default async function Home({searchParams}) {
 
                 <ListProduct
                     total={products.total}
-                    pageNumber={page}
+                    pageNumber={products.pageCount}
                     products={products.data}
                 />
 

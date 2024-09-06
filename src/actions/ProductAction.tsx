@@ -51,13 +51,14 @@ export const createProduct = async (formData) => {
 }
 
 export const getProducts = async (params) => {
+    console.log('params', params)
     const page = params?.page || 1;
     const limit = params?.limit || 10;
     const skip = (page - 1) * limit;
     const query = {
         ...(params.search && {
-            $or:[
-                {productNo: {$regex: params.search, $options: 'i'}},
+            $or: [
+                // {productNo: {$regex: params.search, $options: 'i'}},
                 {productName: {$regex: params.search, $options: 'i'}},
             ]
         })
@@ -79,4 +80,54 @@ export const getProducts = async (params) => {
         data: products,
     })
 
+};
+
+export const deleteProduct = async (id) => {
+    try {
+        await connectDB();
+        await Product.findByIdAndDelete(id);
+        revalidatePath("/")
+        return {
+            message: 'Product deleted successfully'
+        }
+    } catch (error) {
+        return {
+            error: getErrorMessage(error),
+        }
+    }
+}
+
+
+export const getProduct = async (id) => {
+    try {
+        await connectDB();
+        const product = await Product.findById(id);
+        return JSON.stringify(product)
+    } catch (error) {
+        return {
+            error: getErrorMessage(error),
+        }
+    }
+}
+
+export const updateProduct = async (formData) => {
+    const {id, productNo, productName,} = formData;
+
+
+    try {
+        await connectDB();
+        await Product.findByIdAndUpdate(id, {
+            productNo,
+            productName,
+        })
+        revalidatePath("/")
+
+        return {
+            message: 'Product updated successfully'
+        }
+    } catch (error) {
+        return {
+            error: getErrorMessage(error),
+        }
+    }
 };
